@@ -1,0 +1,78 @@
+Private Function GetCollection(URL As String) As Collection
+
+    Dim strResult As String
+    Dim objHTTP As Object
+    Dim NumRows As Long
+    Dim NumCols As Long
+    
+    Set objHTTP = CreateObject("Microsoft.XMLHTTP")
+    
+    objHTTP.Open "GET", URL, False
+    objHTTP.send
+    strResult = objHTTP.responseText
+    arr = SplitTo2DArray(strResult, vbLf, ",")
+    RowCount = UBound(arr, 1)
+    columnCount = UBound(arr, 2)
+    
+    Dim var As Collection
+    Set var = New Collection
+    
+    var.Add arr
+    var.Add RowCount
+    var.Add columnCount
+    
+    Set GetCollection = var
+    
+
+End Function
+
+Private Function SplitTo2DArray(ByRef the_sValue As String, ByRef the_sRowSep As String, ByRef the_sColSep As String) As String()
+
+    Dim vasValue                    As Variant
+    Dim nUBoundValue                As Long
+    Dim avasCells()                 As Variant
+    Dim nRowIndex                   As Long
+    Dim nMaxUBoundCells             As Long
+    Dim nUBoundCells                As Long
+    Dim asCells()                   As String
+    Dim nColumnIndex                As Long
+
+    ' Split up the table value by rows, get the number of rows, and dim a new array of Variants.
+    vasValue = Split(the_sValue, the_sRowSep)
+    nUBoundValue = UBound(vasValue)
+    ReDim avasCells(0 To nUBoundValue)
+
+    ' Iterate through each row, and split it into columns. Find the maximum number of columns.
+    nMaxUBoundCells = 0
+    For nRowIndex = 0 To nUBoundValue
+        avasCells(nRowIndex) = Split(vasValue(nRowIndex), the_sColSep)
+        nUBoundCells = UBound(avasCells(nRowIndex))
+        If nUBoundCells > nMaxUBoundCells Then
+            nMaxUBoundCells = nUBoundCells
+        End If
+    Next nRowIndex
+
+    ' Create a 2D string array to contain the data in <avasCells>.
+    ReDim asCells(0 To nUBoundValue, 0 To nMaxUBoundCells)
+
+    ' Copy all the data from avasCells() to asCells().
+    For nRowIndex = 0 To nUBoundValue
+        For nColumnIndex = 0 To UBound(avasCells(nRowIndex))
+            asCells(nRowIndex, nColumnIndex) = avasCells(nRowIndex)(nColumnIndex)
+        Next nColumnIndex
+    Next nRowIndex
+
+    SplitTo2DArray = asCells()
+
+End Function
+
+Sub Click()
+
+Dim ws As Worksheet
+Set ws = ActiveWorkbook.Worksheets("Sheet1")
+ws.Cells.ClearContents
+
+Set csvCol = GetCollection("https://people.sc.fsu.edu/~jburkardt/data/csv/deniro.csv")
+ws.Range("A1").Resize(csvCol.Item(2), csvCol.Item(3) + 1).Value = csvCol.Item(1)
+
+End Sub

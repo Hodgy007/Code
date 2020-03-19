@@ -4,23 +4,23 @@ Private Function GetCollection(URL As String) As Collection
     Dim objHTTP As Object
     Dim NumRows As Long
     Dim NumCols As Long
-    
+
     Set objHTTP = CreateObject("Microsoft.XMLHTTP")
-    
+
     objHTTP.Open "GET", URL, False
     objHTTP.send
     strResult = objHTTP.responseText
     arr = SplitTo2DArray(strResult, vbLf, ",")
     RowCount = UBound(arr, 1)
     columnCount = UBound(arr, 2)
-    
+
     Dim var As Collection
     Set var = New Collection
-    
+
     var.Add arr
     var.Add RowCount
     var.Add columnCount
-    
+
     Set GetCollection = var
     
 
@@ -45,7 +45,8 @@ Private Function SplitTo2DArray(ByRef the_sValue As String, ByRef the_sRowSep As
     ' Iterate through each row, and split it into columns. Find the maximum number of columns.
     nMaxUBoundCells = 0
     For nRowIndex = 0 To nUBoundValue
-        avasCells(nRowIndex) = Split(vasValue(nRowIndex), the_sColSep)
+    ' avasCells(nRowIndex) = Split(vasValue(nRowIndex), the_sColSep)
+        avasCells(nRowIndex) = CSVParse(vasValue(nRowIndex), the_sColSep)
         nUBoundCells = UBound(avasCells(nRowIndex))
         If nUBoundCells > nMaxUBoundCells Then
             nMaxUBoundCells = nUBoundCells

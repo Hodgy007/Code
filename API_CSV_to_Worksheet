@@ -22,7 +22,7 @@ Private Function GetCollection(URL As String) As Collection
     var.Add columnCount
 
     Set GetCollection = var
-    
+
 
 End Function
 
@@ -66,6 +66,76 @@ Private Function SplitTo2DArray(ByRef the_sValue As String, ByRef the_sRowSep As
     SplitTo2DArray = asCells()
 
 End Function
+
+' Function to parse comma delimited line and return array of field values.
+Function CSVParse(ByVal strLine, ByVal strDelim) As Variant
+    Dim arrFields
+    Dim blnIgnore
+    Dim intFieldCount
+    Dim intCursor
+    Dim intStart
+    Dim strChar
+    Dim strValue
+
+    Const QUOTE = """"
+    Const QUOTE2 = """"""
+
+    ' Check for empty string and return empty array.
+    If (Len(Trim(strLine)) = 0) Then
+        CSVParse = Array()
+        Exit Function
+    End If
+
+    ' Initialize.
+    blnIgnore = False
+    intFieldCount = 0
+    intStart = 1
+    arrFields = Array()
+
+    ' Add delimiter to delimit the last field.
+    strLine = strLine & strDelim
+
+    ' Walk the string.
+    For intCursor = 1 To Len(strLine)
+        ' Get a character.
+        strChar = Mid(strLine, intCursor, 1)
+        Select Case strChar
+            Case QUOTE
+                ' Toggle the ignore flag.
+                blnIgnore = Not blnIgnore
+            Case strDelim
+                If Not blnIgnore Then
+                    ' Add element to the array.
+                    ReDim Preserve arrFields(intFieldCount)
+                    ' Makes sure the "field" has a non-zero length.
+                    If (intCursor - intStart > 0) Then
+                        ' Extract the field value.
+                        strValue = Trim(Mid(strLine, intStart, _
+                            intCursor - intStart))
+                        ' If it's a quoted string, use Mid to
+                        ' remove outer quotes and replace inner
+                        ' doubled quotes with single.
+                        If (Left(strValue, 1) = QUOTE) Then
+                            arrFields(intFieldCount) = _
+                                Replace(Mid(strValue, 2, _
+                                Len(strValue) - 2), QUOTE2, QUOTE)
+                        Else
+                            arrFields(intFieldCount) = strValue
+                        End If
+                    Else
+                        ' An empty field is an empty array element.
+                        arrFields(intFieldCount) = Empty
+                    End If
+                    ' increment for next field.
+                    intFieldCount = intFieldCount + 1
+                    intStart = intCursor + 1
+                End If
+        End Select
+    Next
+    ' Return the array.
+    CSVParse = arrFields
+End Function
+
 
 Sub Click()
 

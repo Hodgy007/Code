@@ -1,0 +1,22 @@
+Private Sub Test1()
+    Dim strResult As String
+    Dim objHTTP As Object
+    Dim ws As Worksheet
+
+    Const URL = "https://people.sc.fsu.edu/~jburkardt/data/csv/deniro.csv"
+
+    Set objHTTP = CreateObject("Microsoft.XMLHTTP")
+    objHTTP.Open "GET", URL, False
+    objHTTP.send
+    strResult = objHTTP.responseText
+
+    Set ws = ActiveSheet
+    lngRow = 0
+    For Each ResultRow In Split(strResult, vbLf)
+        lngRow = lngRow + 1
+        ResultCol = Split(ResultRow, ",", 3)
+        For lngCol = LBound(ResultCol) To UBound(ResultCol)
+            ws.Cells(lngRow, lngCol + 1) = Replace(LTrim(ResultCol(lngCol)), """", "")
+        Next
+    Next
+End Sub
